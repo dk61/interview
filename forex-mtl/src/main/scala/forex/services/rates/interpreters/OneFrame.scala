@@ -1,16 +1,15 @@
 package forex.services.rates.interpreters
 
 import cats.Applicative
-import cats.syntax.applicative._
-import cats.syntax.either._
+import cats.implicits.catsSyntaxApplicativeId
 import forex.domain.Rate
 import forex.services.rates.Algebra
 import forex.services.rates.errors._
-import forex.services.rates.interpreters.oneframe.OneFrameClient
+import forex.services.rates.interpreters.oneframe.OneFrameCachedClient
 
 class OneFrame[F[_]: Applicative] extends Algebra[F] {
-  val oneFrameClient: OneFrameClient = new OneFrameClient
+  val oneFrameClient: OneFrameCachedClient = new OneFrameCachedClient
   override def get(pair: Rate.Pair): F[Error Either Rate] = {
-    oneFrameClient.getOneFrameData(pair).asRight[Error].pure[F]
+    oneFrameClient.getOneFrameData(pair).pure[F]
   }
 }
