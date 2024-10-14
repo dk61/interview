@@ -3,12 +3,12 @@ package forex.services.rates.interpreters.oneframe
 import cats.effect.IO
 import cats.implicits.catsSyntaxEitherId
 import forex.domain.Rate.Pair
-import forex.domain.{Currency, Price}
+import forex.domain.{ Currency, Price }
 import io.circe.Decoder.decodeLocalDateTimeWithFormatter
 import io.circe.generic.extras.Configuration
-import io.circe.{Decoder, DecodingFailure}
+import io.circe.{ Decoder, DecodingFailure }
 import org.http4s.circe.jsonOf
-import org.http4s.{EntityDecoder, QueryParamEncoder}
+import org.http4s.{ EntityDecoder, QueryParamEncoder }
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -31,16 +31,15 @@ object OneFrameProtocol {
   }
 
   implicit val priceDecoder: Decoder[Price] = {
-    Decoder.instance[Price] {
-      cursor =>
-        Option(cursor)
-          .map(c => c.value)
-          .filter(v => v.isNumber)
-          .flatMap(v => v.asNumber)
-          .flatMap(n => n.toBigDecimal)
-          .map(b => Price(b))
-          .get
-          .asRight[DecodingFailure]
+    Decoder.instance[Price] { cursor =>
+      Option(cursor)
+        .map(c => c.value)
+        .filter(v => v.isNumber)
+        .flatMap(v => v.asNumber)
+        .flatMap(n => n.toBigDecimal)
+        .map(b => Price(b))
+        .get
+        .asRight[DecodingFailure]
     }
   }
 
