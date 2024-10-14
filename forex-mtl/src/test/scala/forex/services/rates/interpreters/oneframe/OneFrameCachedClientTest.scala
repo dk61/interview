@@ -4,7 +4,7 @@ import forex.domain.Currency.{JPY, USD}
 import forex.domain.Rate.Pair
 import forex.domain.RateOps.PairOps
 import forex.domain.{Price, Rate, Timestamp}
-import forex.services.rates.errors.Error.OneFrameLookupFailed
+import forex.services.rates.errors.Error.{BadPairProvided, OneFrameLookupFailed}
 import org.mockito.MockitoSugar.{mock, times, verify, when}
 import org.scalatest.funsuite.AnyFunSuite
 //need to fix when same currency for from and to USD -> USD
@@ -82,6 +82,7 @@ class OneFrameCachedClientTest extends AnyFunSuite {
 
     directError match {
       case OneFrameLookupFailed(msg) => assert(s"Unable to retrieve data for pair = $pair, pls try again later" == msg)
+      case BadPairProvided(_) => assert(false)
     }
 
     val oppositeResponse = cachedClient.getOneFrameData(swappedPair)
@@ -90,6 +91,7 @@ class OneFrameCachedClientTest extends AnyFunSuite {
 
     oppositeError match {
       case OneFrameLookupFailed(msg) => assert(s"Unable to retrieve data for pair = $swappedPair, pls try again later" == msg)
+      case BadPairProvided(_)  => assert(false)
     }
 
     for {

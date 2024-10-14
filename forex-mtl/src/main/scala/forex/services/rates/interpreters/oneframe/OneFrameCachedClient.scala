@@ -1,10 +1,10 @@
 package forex.services.rates.interpreters.oneframe
-import com.github.blemale.scaffeine.{ LoadingCache, Scaffeine }
+import com.github.blemale.scaffeine.{LoadingCache, Scaffeine}
 import forex.domain.Rate
 import forex.domain.Rate.Pair
 import forex.domain.RateOps.PairOps
 import forex.services.rates.errors.Error
-import forex.services.rates.errors.Error.OneFrameLookupFailed
+import forex.services.rates.errors.Error.{BadPairProvided, OneFrameLookupFailed}
 
 import scala.concurrent.duration.DurationInt
 
@@ -22,15 +22,21 @@ class OneFrameCachedClient(val oneFrameClient: OneFrameClient) {
       .maximumSize(100)
       .build(p => cache.getIfPresent(p.swap).getOrElse(oneFrameClient.loadPair(p)))
 
-  def getOneFrameData(pair: Rate.Pair): Either[Error, Rate] =
-    cache
-      .get(pair)
-      .flatMap(
-        p =>
-          p.get(pair)
-            .toRight({
-              OneFrameLookupFailed(s"Unable to retrieve data for pair = $pair, pls try again later")
-            })
-      )
+  def getOneFrameData(pair: Rate.Pair): Either[Error, Rate] = {
+    pair match {
+      case _ if isValidPair(pair) => cache
+        .get(pair)
+        .flatMap(
+          p =>
+            p.get(pair)
+              .toRight({
+                OneFrameLookupFailed(s"Unable to retrieve data for pair = $pair, pls try again later")
+              })
+        )
+      case _ => Left(BadPairProvided(s"Pair always should be different"))
+    }
 
+  }
+
+  private def isValidPair(pair: Pair): Boolean = pair.to != pair.from
 }

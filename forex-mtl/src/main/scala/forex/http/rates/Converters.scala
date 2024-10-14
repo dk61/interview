@@ -1,6 +1,7 @@
 package forex.http.rates
 
 import forex.domain._
+import forex.programs.rates.errors.ProgramError
 
 object Converters {
   import Protocol._
@@ -15,4 +16,8 @@ object Converters {
       )
   }
 
+  private[rates] implicit class ErrorResponseOps(val err: ProgramError) extends AnyVal {
+    def asErrorResponse: ErrorResponse =
+      ErrorResponse(message = err.getLocalizedMessage)
+  }
 }
