@@ -8,9 +8,9 @@ import forex.services.rates.errors.Error.OneFrameLookupFailed
 
 import scala.concurrent.duration.DurationInt
 
-class OneFrameCachedClient {
+//Not sure does that initialization is good
+class OneFrameCachedClient(val oneFrameClient: OneFrameClient) {
 
-  val oneFrameClient: OneFrameClient = new OneFrameClient
   private val cache: LoadingCache[Pair, Either[Error, Map[Pair, Rate]]] =
     Scaffeine()
       .expireAfter[Pair, Either[Error, Map[Pair, Rate]]](
