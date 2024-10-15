@@ -1,6 +1,7 @@
 package forex.domain
 
 import cats.Show
+import org.http4s.ParseFailure
 
 sealed trait Currency
 
@@ -14,6 +15,8 @@ object Currency {
   case object JPY extends Currency
   case object SGD extends Currency
   case object USD extends Currency
+
+  private val availableCurrencies = List(AUD, CAD, CHF, EUR, GBP, NZD, JPY, SGD, USD)
 
   implicit val show: Show[Currency] = Show.show {
     case AUD => "AUD"
@@ -37,6 +40,10 @@ object Currency {
     case "JPY" => JPY
     case "SGD" => SGD
     case "USD" => USD
+    case _ =>
+      throw new ParseFailure(
+        s"Unsupported currency, pls use $availableCurrencies",
+        s"It's prohibited to use one of the currency beside next $availableCurrencies"
+      )
   }
-
 }
