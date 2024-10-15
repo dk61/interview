@@ -56,14 +56,18 @@ libraryDependencies ++= Seq(
   Libraries.fs2,
   Libraries.http4sDsl,
   Libraries.http4sServer,
+  Libraries.http4sClient,
   Libraries.http4sCirce,
   Libraries.circeCore,
   Libraries.circeGeneric,
   Libraries.circeGenericExt,
   Libraries.circeParser,
   Libraries.pureConfig,
+  Libraries.scaffeineCache,
   Libraries.logback,
   Libraries.scalaTest      % Test,
+  Libraries.scalaMock      % Test,
+  Libraries.mockitoScala   % Test,
   Libraries.scalaCheck     % Test,
   Libraries.catsScalaCheck % Test
 )
