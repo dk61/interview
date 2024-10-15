@@ -1,15 +1,16 @@
 package forex.services.rates.interpreters.oneframe
 
-import forex.domain.Currency.{JPY, USD}
+import forex.domain.Currency.{ JPY, USD }
 import forex.domain.Rate.Pair
 import forex.domain.RateOps.PairOps
-import forex.domain.{Price, Rate, Timestamp}
-import forex.services.rates.errors.Error.{BadPairProvided, OneFrameLookupFailed}
-import org.mockito.MockitoSugar.{mock, times, verify, when}
+import forex.domain.{ Price, Rate, Timestamp }
+import forex.services.rates.errors.Error.{ BadPairProvided, OneFrameLookupFailed }
+import org.mockito.MockitoSugar.{ mock, times, verify, when }
 import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 //need to fix when same currency for from and to USD -> USD
-class OneFrameCachedClientTest extends AnyFunSuite {
-  val pair: Pair = Pair(USD, JPY)
+class OneFrameCachedClientTest extends AnyFunSuite with Matchers {
+  val pair: Pair        = Pair(USD, JPY)
   val swappedPair: Pair = pair.swap
 
   test("Good data & no repeatable attempts & Swap check") {
@@ -27,24 +28,14 @@ class OneFrameCachedClientTest extends AnyFunSuite {
       )
 
     val cachedClient: OneFrameCachedClient = new OneFrameCachedClient(clientMock)
-    val directResponse                     = cachedClient.getOneFrameData(pair)
 
-    assert(directResponse.isRight)
-    val directRate = directResponse.toOption.get
-
-    assert(USD == directRate.pair.from)
-    assert(JPY == directRate.pair.to)
-    assert(Price(0.5) == directRate.price)
-    assert(expectedTs == directRate.timestamp)
-
-    val oppositeResponse = cachedClient.getOneFrameData(pair)
-    assert(oppositeResponse.isRight)
-    val oppositeRate = oppositeResponse.toOption.get
-
-    assert(USD == oppositeRate.pair.from)
-    assert(JPY == oppositeRate.pair.to)
-    assert(Price(0.5) == oppositeRate.price)
-    assert(expectedTs == oppositeRate.timestamp)
+    for {
+      directResponse <- cachedClient.getOneFrameData(pair)
+      oppositeResponse <- cachedClient.getOneFrameData(swappedPair)
+    } yield {
+      directResponse shouldBe Rate(pair, Price(0.5), expectedTs)
+      oppositeResponse shouldBe Rate(swappedPair, Price(0.5), expectedTs)
+    }
 
     for {
       _ <- 1 to 100
@@ -75,23 +66,15 @@ class OneFrameCachedClientTest extends AnyFunSuite {
       )
 
     val cachedClient: OneFrameCachedClient = new OneFrameCachedClient(clientMock)
-    val directResponse                     = cachedClient.getOneFrameData(pair)
 
-    assert(directResponse.isLeft)
-    val directError = directResponse.left.toOption.get
-
-    directError match {
-      case OneFrameLookupFailed(msg) => assert(s"Unable to retrieve data for pair = $pair, pls try again later" == msg)
-      case BadPairProvided(_) => assert(false)
-    }
-
-    val oppositeResponse = cachedClient.getOneFrameData(swappedPair)
-    assert(oppositeResponse.isLeft)
-    val oppositeError = oppositeResponse.left.toOption.get
-
-    oppositeError match {
-      case OneFrameLookupFailed(msg) => assert(s"Unable to retrieve data for pair = $swappedPair, pls try again later" == msg)
-      case BadPairProvided(_)  => assert(false)
+    for {
+      directResponse <- cachedClient.getOneFrameData(pair).swap
+      oppositeResponse <- cachedClient.getOneFrameData(swappedPair).swap
+    } yield {
+      directResponse shouldBe OneFrameLookupFailed(s"Unable to retrieve data for pair = $pair, pls try again later")
+      oppositeResponse shouldBe OneFrameLookupFailed(
+        s"Unable to retrieve data for pair = $swappedPair, pls try again later"
+      )
     }
 
     for {
@@ -103,5 +86,18 @@ class OneFrameCachedClientTest extends AnyFunSuite {
 
     verify(clientMock, times(101)).loadPair(pair)
     verify(clientMock, times(101)).loadPair(swappedPair)
+  }
+
+  test("Test invalid pair provided") {
+    val clientMock                         = mock[OneFrameClient]
+    val cachedClient: OneFrameCachedClient = new OneFrameCachedClient(clientMock)
+    val badPair: Pair                      = Pair(USD, USD)
+
+    for {
+      directResponse <- cachedClient.getOneFrameData(badPair).swap
+    } yield {
+      directResponse shouldBe BadPairProvided(s"Pair always should be different, has been provided $badPair")
+    }
+    verify(clientMock, times(0)).loadPair(badPair)
   }
 }
