@@ -33,7 +33,7 @@ class OneFrameCachedClient(val oneFrameClient: OneFrameClient) {
                 OneFrameLookupFailed(s"Unable to retrieve data for pair = $pair, pls try again later")
               })
         )
-      case _ => Left(BadPairProvided(s"Pair always should be different"))
+      case _ => Left(BadPairProvided(s"Pair always should be different, has been provided $pair"))
     }
 
   }
