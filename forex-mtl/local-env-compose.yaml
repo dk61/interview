@@ -1,4 +1,4 @@
-name: forex-killer
+name: forex-local-tools
 services:
   currency-provider:
     container_name: one-frame-provider
