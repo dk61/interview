@@ -1,0 +1,8 @@
+name: forex-local-tools
+services:
+  currency-provider:
+    container_name: one-frame-provider
+    restart: always
+    image: paidyinc/one-frame:latest
+    ports:
+      - 8081:8080

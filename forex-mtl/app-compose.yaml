@@ -1,0 +1,9 @@
+name: forex-app
+services:
+  forex-proxy:
+    container_name: forex-proxy-provider
+    restart: always
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
