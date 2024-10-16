@@ -1,0 +1,22 @@
+name: forex-local
+services:
+  currency-provider:
+    container_name: one-frame-provider-local
+    restart: always
+    image: paidyinc/one-frame:latest
+    networks:
+      - internal-net
+  forex-proxy:
+    environment:
+      - APP_ENV=docker
+    container_name: forex-proxy-provider-local
+    restart: always
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks:
+      - internal-net
+networks:
+  internal-net:
+    driver: bridge

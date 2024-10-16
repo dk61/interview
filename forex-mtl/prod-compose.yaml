@@ -1,6 +1,8 @@
 name: forex-app
 services:
   forex-proxy:
+    environment:
+      - APP_ENV=docker
     container_name: forex-proxy-provider
     restart: always
     build:

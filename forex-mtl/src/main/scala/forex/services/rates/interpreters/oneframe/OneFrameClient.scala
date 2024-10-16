@@ -23,7 +23,7 @@ class OneFrameClient {
 
   private val resource = BlazeClientBuilder[IO](global).resource
 
-  private val config = Config.read("app")
+  private val config = Config.read
 
   private val token = config.currencyProvider.token
   private val port  = config.currencyProvider.port
